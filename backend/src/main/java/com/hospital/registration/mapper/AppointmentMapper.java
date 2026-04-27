@@ -78,9 +78,19 @@ public interface AppointmentMapper {
             SELECT COUNT(*)
             FROM t_appointment
             WHERE patient_id = #{patientId}
-              AND doctor_id IN (SELECT id FROM t_doctor WHERE department_id = #{departmentId} AND del_flag = 0)
               AND appointment_date = #{date}
               AND status <> 'CANCELLED'
+              AND (
+                    department_id = #{departmentId}
+                    OR (
+                        department_id IS NULL
+                        AND doctor_id IN (
+                            SELECT id
+                            FROM t_doctor
+                            WHERE department_id = #{departmentId}
+                        )
+                    )
+                  )
             """)
     long countActiveByPatientAndDepartmentAndDate(@Param("patientId") Long patientId,
                                                   @Param("departmentId") Long departmentId,

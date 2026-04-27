@@ -7,7 +7,6 @@
 - Spring Security + JWT
 - MyBatis + MyBatis-Plus
 - MySQL
-- Maven
 
 ## 目录结构
 
@@ -21,36 +20,22 @@ backend/
 │  ├─ service/
 │  └─ exception/
 ├─ src/main/resources/
-│  ├─ application.yml
-│  └─ schema.sql
+│  └─ application.yml
 ├─ 数据库初始化脚本/
 │  ├─ db.sql
 │  └─ data.sql
 └─ pom.xml
 ```
 
+说明：`src/main/resources` 不再维护运行期 SQL，数据库统一以 `数据库初始化脚本/db.sql` 为准。
+
 ## 启动前准备
 
-1. 安装 JDK 17+、Maven 3.8+、MySQL 8+。
+1. 安装 JDK 17+、MySQL 8+。
 2. 执行数据库脚本：
    - `数据库初始化脚本/db.sql`
    - `数据库初始化脚本/data.sql`
-
-## 配置说明
-
-默认配置文件：`src/main/resources/application.yml`
-
-默认数据库连接：
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/or_sys?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: root
-```
-
-请按本地环境调整用户名/密码。
+3. 按本地环境修改 `src/main/resources/application.yml` 数据库连接。
 
 ## 本地启动
 
@@ -59,25 +44,8 @@ cd backend
 mvn spring-boot:run
 ```
 
-或：
+## 接口文档
 
-```bash
-cd backend
-mvn clean package -DskipTests
-java -jar target/registration-system-0.0.1-SNAPSHOT.jar
-```
-
-## 访问地址
-
-- 后端服务：`http://localhost:8080`
-- Swagger UI：`http://localhost:8080/swagger-ui/index.html`
-- OpenAPI：`http://localhost:8080/v3/api-docs`
-
-## 鉴权说明
-
-需登录接口获取 JWT，受保护接口在请求头携带：
-
-```text
-Authorization: Bearer <token>
-```
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI: `http://localhost:8080/v3/api-docs`
 

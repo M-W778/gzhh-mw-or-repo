@@ -17,6 +17,7 @@ import com.hospital.registration.service.DoctorService;
 import com.hospital.registration.service.PatientService;
 import com.hospital.registration.service.UserService;
 import jakarta.annotation.Resource;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -142,7 +143,22 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointmentDO.setRemarks(request.getRemarks());
         appointmentDO.setNotificationSent(false);
 
-        appointmentMapper.insert(appointmentDO);
+        try {
+            appointmentMapper.insert(appointmentDO);
+        } catch (DuplicateKeyException e) {
+            String errorMessage = e.getMessage();
+            if (errorMessage != null && errorMessage.contains("uk_patient_dept_date")) {
+                throw new BusinessException(
+                        ErrorCode.OPERATION_ERROR,
+                        "appointment conflict on same patient/department/date. " +
+                                "If this comes from a cancelled record, please run DB migration to drop uk_patient_dept_date."
+                );
+            }
+            if (errorMessage != null && errorMessage.contains("uk_appointment_no")) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "failed to generate unique appointment number");
+            }
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "create appointment failed: duplicate key");
+        }
         return appointmentDO;
     }
 
