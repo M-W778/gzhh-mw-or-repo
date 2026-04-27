@@ -14,7 +14,7 @@ public enum AppointmentStatusEnum {
     PENDING("待就诊", "PENDING"),
     COMPLETED("已完成", "COMPLETED"),
     CANCELLED("已取消", "CANCELLED"),
-    Exceed("已超时", "Exceed");
+    EXCEED("已超时", "EXCEED");
 
     private final String text;
     private final String value;

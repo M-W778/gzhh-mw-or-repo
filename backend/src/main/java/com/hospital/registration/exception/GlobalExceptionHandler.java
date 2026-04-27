@@ -3,8 +3,6 @@ package com.hospital.registration.exception;
 import com.hospital.registration.common.ErrorCode;
 import com.hospital.registration.common.ResultUtils;
 import com.hospital.registration.common.BaseResponse;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;

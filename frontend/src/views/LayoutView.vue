@@ -3,7 +3,7 @@
     <el-header class="header">
       <div class="header-left">
         <el-icon class="logo-icon"><OfficeBuilding /></el-icon>
-        <span class="title">示例综合医院</span>
+        <span class="title">智航科技大学附属第二医院</span>
       </div>
       <div class="header-right">
         <template v-if="userStore.isLoggedIn">
@@ -44,7 +44,7 @@
     </el-main>
 
     <el-footer class="footer">
-      <p>2026 示例综合医院 在线预约挂号系统</p>
+      <p>2026智航科技大学附属第二医院 在线预约挂号系统</p>
       <p>本系统为教学与演示用途，页面与数据仅用于功能展示。</p>
     </el-footer>
   </el-container>

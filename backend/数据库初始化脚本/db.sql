@@ -2,6 +2,7 @@
 CREATE DATABASE IF NOT EXISTS or_sys CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE or_sys;
 
+--用户表
 CREATE TABLE IF NOT EXISTS `t_user` (
     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `username` varchar(256) NOT NULL COMMENT '用户名',
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS `t_user` (
     KEY `idx_phone` (`phone`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
+--就诊人表
 CREATE TABLE IF NOT EXISTS `t_patient` (
     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `user_id` bigint(20) unsigned NOT NULL COMMENT '关联用户ID',
@@ -38,6 +40,7 @@ CREATE TABLE IF NOT EXISTS `t_patient` (
     CONSTRAINT `fk_patient_user` FOREIGN KEY (`user_id`) REFERENCES `t_user` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='就诊人表';
 
+--科室表
 CREATE TABLE IF NOT EXISTS `t_department` (
     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `dept_name` varchar(50) NOT NULL COMMENT '科室名称',
@@ -52,12 +55,13 @@ CREATE TABLE IF NOT EXISTS `t_department` (
     KEY `idx_sort_order` (`sort_order`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='科室表';
 
+--医生表
 CREATE TABLE IF NOT EXISTS `t_doctor` (
     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `department_id` bigint(20) unsigned NOT NULL COMMENT '所属科室ID',
     `user_id` bigint(20) unsigned DEFAULT NULL COMMENT '关联用户ID(医生登录账号)',
     `name` varchar(50) NOT NULL COMMENT '医生姓名',
-    `title` varchar(20) NOT NULL COMMENT '职称',
+    `title` varchar(20) NOT NULL COMMENT '职称：CHIEF主任医师, ASSOCIATE_CHIEF副主任医师, ATTENDING主治医师, RESIDENT住院医师',
     `specialty` varchar(200) DEFAULT NULL COMMENT '专长',
     `introduction` text COMMENT '简介',
     `avatar_url` varchar(255) DEFAULT NULL COMMENT '头像路径',
@@ -73,6 +77,7 @@ CREATE TABLE IF NOT EXISTS `t_doctor` (
     CONSTRAINT `fk_doctor_user` FOREIGN KEY (`user_id`) REFERENCES `t_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='医生表';
 
+--排班表(号源表)
 CREATE TABLE IF NOT EXISTS `t_schedule` (
     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `doctor_id` bigint(20) unsigned NOT NULL COMMENT '医生ID',
@@ -80,7 +85,7 @@ CREATE TABLE IF NOT EXISTS `t_schedule` (
     `time_slot` varchar(10) NOT NULL COMMENT '时段：MORNING/AFTERNOON',
     `total_amount` int NOT NULL COMMENT '总号源数',
     `remaining_amount` int NOT NULL COMMENT '剩余号源数',
-    `status` varchar(20) NOT NULL DEFAULT 'AVAILABLE' COMMENT '状态：AVAILABLE/FULL/SUSPENDED',
+    `status` varchar(20) NOT NULL DEFAULT 'AVAILABLE' COMMENT '状态：AVAILABLE可预约/FULL已约满/SUSPENDED停诊',
     `version` bigint(20) NOT NULL DEFAULT 0 COMMENT '乐观锁版本号',
     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -90,6 +95,7 @@ CREATE TABLE IF NOT EXISTS `t_schedule` (
     CONSTRAINT `fk_schedule_doctor` FOREIGN KEY (`doctor_id`) REFERENCES `t_doctor` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='排班表';
 
+--预约记录表
 CREATE TABLE IF NOT EXISTS `t_appointment` (
     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `appointment_no` varchar(20) NOT NULL COMMENT '预约号',
@@ -100,7 +106,7 @@ CREATE TABLE IF NOT EXISTS `t_appointment` (
     `schedule_id` bigint(20) unsigned NOT NULL COMMENT '排班ID',
     `appointment_date` date NOT NULL COMMENT '预约日期',
     `time_slot` varchar(10) NOT NULL COMMENT '时段',
-    `status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT '状态：PENDING/COMPLETED/CANCELLED/NO_SHOW',
+    `status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT '状态：PENDING待就诊/COMPLETED已完成/CANCELLED已取消/EXCEED已超时',
     `queue_number` int DEFAULT NULL COMMENT '排队号',
     `remarks` varchar(500) DEFAULT NULL COMMENT '备注',
     `refuse_time` datetime DEFAULT NULL COMMENT '取消时间',
@@ -121,25 +127,26 @@ CREATE TABLE IF NOT EXISTS `t_appointment` (
     CONSTRAINT `fk_appointment_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `t_schedule` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='预约记录表';
 
+--通知表
 CREATE TABLE IF NOT EXISTS `t_notice` (
     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
-    `tag` varchar(20) NOT NULL COMMENT 'tag text',
-    `tag_type` varchar(20) NOT NULL DEFAULT 'primary' COMMENT 'tag style',
-    `title` varchar(120) NOT NULL COMMENT 'notice title',
-    `summary` varchar(500) DEFAULT NULL COMMENT 'notice summary',
-    `publish_date` date NOT NULL COMMENT 'publish date',
-    `pinned` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'is pinned',
-    `path` varchar(255) DEFAULT NULL COMMENT 'jump path',
-    `enabled` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'enabled flag',
-    `del_flag` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'delete flag',
-    `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
-    `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'update time',
+    `tag` varchar(20) NOT NULL COMMENT '内容',
+    `tag_type` varchar(20) NOT NULL DEFAULT 'primary' COMMENT '类型',
+    `title` varchar(120) NOT NULL COMMENT '通知标题',
+    `summary` varchar(500) DEFAULT NULL COMMENT '通知总结',
+    `publish_date` date NOT NULL COMMENT '发送日期',
+    `pinned` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否固定',
+    `path` varchar(255) DEFAULT NULL COMMENT '路径',
+    `enabled` tinyint(1) NOT NULL DEFAULT '1' COMMENT '禁用标识',
+    `del_flag` tinyint(1) NOT NULL DEFAULT '0' COMMENT '删除标识(0未删,1已删)',
+    `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '跟新时间',
     PRIMARY KEY (`id`),
     KEY `idx_notice_publish` (`publish_date`) USING BTREE,
     KEY `idx_notice_enabled` (`enabled`) USING BTREE,
     KEY `idx_notice_pinned` (`pinned`) USING BTREE,
     KEY `idx_notice_del_flag` (`del_flag`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='notice table';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通知表';
 
 -- =========================================================
 -- Legacy compatibility migration (idempotent)
